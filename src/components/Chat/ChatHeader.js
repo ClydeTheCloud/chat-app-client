@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import './ChatHeader.style.scss'
 import { ReactComponent as CallIcon } from '../../icons/call-icon.svg'
 
+// Верхняя панель чата, содержит название комнаты, кнопку для выхода, кнопку для звонка, кнопку для открытия панели "кто онлайн"
 export default function ChatHeader({ handleLogout, toggleSidebar, handleCall, incomingStream }) {
 	const { room } = useParams()
 

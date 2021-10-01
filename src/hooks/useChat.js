@@ -96,10 +96,12 @@ export default function useChat(url) {
 		// eslint-disable-next-line
 	}, [name])
 
+	// Отправляем сообщение на сервер
 	const sendMessage = text => {
 		socket.current.emit(ACTIONS.ADD_MESSAGE, text)
 	}
 
+	// Сбрасываем имя пользователя, при этом компонент чата демонтируется и сокет отключается
 	const logout = () => {
 		setName(undefined)
 	}

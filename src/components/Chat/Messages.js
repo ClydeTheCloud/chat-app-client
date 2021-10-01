@@ -1,6 +1,7 @@
 import Message from './Message'
 import Notice from './Notice'
 
+// Компонент возвращает все сообщения в чате
 export default function Messages({ messages }) {
 	return (
 		<div className="messages">

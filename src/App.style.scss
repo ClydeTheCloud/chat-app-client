@@ -9,7 +9,7 @@ body {
 }
 
 button {
-	padding: 0.5em 1em;
+	padding: 0.5em clamp(0.25em, 2vw, 1em);
 	text-align: center;
 	background-color: var(--accent-color3);
 	color: var(--accent-color2);

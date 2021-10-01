@@ -1,20 +1,15 @@
 import Peer from 'simple-peer'
 import { useEffect, useState, useRef } from 'react'
 
-let log = console.log
+import { ACTIONS } from '../utils/actions'
+
+// В этот объект сохраняются все подключения
 let peers = {}
 
-const A = {
-	CALL_STATUS: 'call:status',
-	CALL_SIGNAL: 'call:signal',
-	CALL_READY_TO_JOIN: 'call:ready-to-join',
-	CALL_INIT: 'call:init',
-	CALL_LEAVE: 'call:leave',
-}
+// Список событий сокета, от которых мы отписываемся после отключения видео
+const eventCleanUpList = ['call:signal', 'call:ready-to-join', 'call:init']
 
 export default function useCall(socket) {
-	// const [peers, setPeers] = useState({})
-
 	// Булевые состояния, связанные со стримом. Ниже описание что значит значение true в каждом из случаев:
 	// Отправляем совй стрим другим
 	const [emitingStream, setEmitingStream] = useState(false)
@@ -23,20 +18,18 @@ export default function useCall(socket) {
 	// В процессе получаения стороннего стрима
 	const [receivingStream, setReceivingStream] = useState(false)
 
-	useEffect(() => log('emitingStream', emitingStream), [emitingStream])
-	useEffect(() => log('incomingStream', incomingStream), [incomingStream])
-	useEffect(() => log('receivingStream', receivingStream), [receivingStream])
-
+	// Реф на объект стрима полученый с нашей камеры, либо через P2P соединение
 	const streamRef = useRef()
 
+	// Назначаем обработчики некоторых событий сразу как получили реф на объект сокета
 	useEffect(() => {
 		if (socket.current) {
-			socket.current.on('call:status', status => {
-				if (!emitingStream) setIncomingStream(status)
-			})
-			socket.current.on('call:ended', () => {
-				leave()
-			})
+			// Меняем локально состояние при смене статуса звонка на сервере
+			socket.current.on(ACTIONS.CALL_STATUS, setIncomingStream)
+			// Отключаем видео при сигнале от сервера об окончании сеанса
+			socket.current.on(ACTIONS.CALL_ENDED, leave)
+			// Отправляем запрос на получения статуса звонка
+			socket.current.emit(ACTIONS.CALL_STATUS)
 		}
 		// eslint-disable-next-line
 	}, [socket.current])
@@ -56,6 +49,7 @@ export default function useCall(socket) {
 		}
 	}
 
+	// Находим плеер, устанавливаем стрим как источник данных, запускаем воспроизведение. Вызываем функцию с аргументом true если источник стрима локальный, и false, если стрим получен от сервера
 	function initVideo(muted) {
 		const video = document.querySelector('video')
 		video.srcObject = streamRef.current
@@ -65,6 +59,7 @@ export default function useCall(socket) {
 		}
 	}
 
+	// Останавливаем все дорожки воспроизведения стрима (аудио/видео)
 	function stopVideo() {
 		if (streamRef.current) {
 			streamRef.current.getTracks().forEach(track => {
@@ -73,37 +68,31 @@ export default function useCall(socket) {
 		}
 	}
 
-	// Создаём P2P подключение, отправляем оффер
+	// Создаём P2P подключение со стримом, отправляем оффер
 	function generateOffer(id) {
-		log('generate', id)
-		console.log(streamRef.current)
 		const peer = new Peer({ initiator: true, stream: streamRef.current })
 		peer.on('signal', signal => {
-			log('initiator sent signal')
-			log(signal)
-			socket.current.emit('call:signal', { to: id, signal, from: socket.current.id })
-		})
-		peer.on('connect', () => {
-			log('connected')
+			socket.current.emit(ACTIONS.CALL_SIGNAL, { to: id, signal, from: socket.current.id })
 		})
 		return peer
 	}
 
 	// Иницируем звонок: назначаем обработчики событий и оповещаем сервер о том что мы готовы принимать вызовы
 	function initCall() {
-		socket.current.on('call:ready-to-join', id => {
-			log('recived ready-to-join')
+		// Когда кто-то готов подключиться - генерируем оффер и отправляем по ID
+		socket.current.on(ACTIONS.CALL_READY_TO_JOIN, id => {
 			peers[id] = generateOffer(id)
 		})
-		socket.current.on('call:signal', data => {
-			log('recieved signal', data)
+		// Принимаем ответный сигнал для подключения
+		socket.current.on(ACTIONS.CALL_SIGNAL, data => {
 			peers[data.id].signal(data.signal)
 		})
-		socket.current.emit('call:init')
+		// Оповещаем сервер начали звонок и готовы к подключениям
+		socket.current.emit(ACTIONS.CALL_INIT)
 	}
 
+	// Начинаем вызов - получаем медиапоток, обновляем состояние, запускаем механизм инициализации
 	async function startCall() {
-		log('start call')
 		await getStream()
 		setEmitingStream(true)
 		initCall()
@@ -113,30 +102,29 @@ export default function useCall(socket) {
 	function generateAnswer() {
 		const peer = new Peer()
 		peers[socket.id] = peer
-		log('generating answer')
 		let respondTo
+		// При получаении пиром сигнала отправляем ответ
 		peer.on('signal', signal => {
-			log('emiting signal')
-			socket.current.emit('call:signal', { to: respondTo, signal, from: socket.current.id })
+			socket.current.emit(ACTIONS.CALL_SIGNAL, { to: respondTo, signal, from: socket.current.id })
 		})
+		// При получаении медиапотока сохраняем его в реф и инициализируем видео, так же обновляем состояние
 		peer.on('stream', incomingStream => {
-			log('stream')
 			streamRef.current = incomingStream
 			initVideo(false)
 			setReceivingStream(true)
 		})
-		socket.current.on('call:signal', data => {
-			log('recieved signal data', data)
-
+		// При получении сигнала через веб-сокет передаём его пиру для обработки
+		socket.current.on(ACTIONS.CALL_SIGNAL, data => {
 			respondTo = data.id
 			peer.signal(data.signal)
 		})
-		socket.current.emit('call:ready-to-join', socket.current.id)
+		// Оповещаем сервер что хотели бы подключиться к текущему звонку
+		socket.current.emit(ACTIONS.CALL_READY_TO_JOIN, socket.current.id)
 	}
 
+	// Отключаемся от звонка, останавливаем воспроизведение, подчищаем хвосты
 	function leave() {
-		log('leave')
-		if (emitingStream) socket.current.emit('call:leave')
+		if (emitingStream) socket.current.emit(ACTIONS.CALL_LEAVE)
 		setEmitingStream(false)
 		setReceivingStream(false)
 		// setStream(null)
@@ -145,17 +133,14 @@ export default function useCall(socket) {
 		cleanUp()
 	}
 
+	// Очищаем все пиры с которыми связывались, отписываемся от событий обработки сигналов для соединения пиров
 	function cleanUp() {
-		log('cleanup')
 		Object.values(peers).forEach(peer => peer.destroy())
 		peers = {}
-		Object.values(A).forEach(eventName => {
-			if (eventName !== 'call:status') {
-				socket.current.removeAllListeners(eventName)
-			}
-		})
+		Object.values(eventCleanUpList).forEach(eventName => socket.current.removeAllListeners(eventName))
 	}
 
+	// Универсальная функция для управления вызовами одной кнопкой - решает иницировать вызов, принимать его, или сбрасывать.
 	function handleCall(setVideoMode) {
 		if (!emitingStream && !incomingStream && !receivingStream) {
 			setVideoMode(true)

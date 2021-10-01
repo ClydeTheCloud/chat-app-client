@@ -1,5 +1,6 @@
 import './MiniChat.style.scss'
 
+// Отображает сообщения поверх видео
 export default function MiniChat({ lastMessages }) {
 	return (
 		<div className="mini-chat">

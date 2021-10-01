@@ -18,13 +18,15 @@ export default function Chat({
 	incomingStream,
 }) {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+	// Значение true обозначает что UI в режиме просмотра/вещания видео
 	const [videoMode, setVideoMode] = useState(false)
+	// Переключатель для панели "кто онлайн"
 	const toggleSidebar = () => {
 		setIsSidebarOpen(!isSidebarOpen)
 	}
 
+	// Отменяет режим просмотра видео если инициатор звока сбрасывает вызов
 	useEffect(() => {
-		console.log('useffect on chat')
 		if (!receivingStream) setVideoMode(false)
 	}, [receivingStream])
 
@@ -42,6 +44,7 @@ export default function Chat({
 				handleCall={() => handleCall(setVideoMode)}
 				incomingStream={incomingStream}
 			/>
+			{/* В основном окне чата располагаются либо сообщения, либо окно с видео (у окна с видео так же есть мини-чат) */}
 			{videoMode ? <VideoPlayer emitingStream={emitingStream} messages={messages} /> : <Messages messages={messages} />}
 
 			<ChatFooter sendMessage={sendMessage} />

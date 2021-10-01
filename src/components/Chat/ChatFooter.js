@@ -1,16 +1,16 @@
 import { useState } from 'react'
+
 import './ChatFooter.style.scss'
 import { ReactComponent as SendIcon } from '../../icons/send-icon.svg'
 
+// Нижняя панель чата с инпутом и кнопкой для отправки сообщений
 export default function ChatFooter({ sendMessage }) {
 	const [text, setText] = useState('')
 
+	// Обработчик отправки сообщений
 	const submit = e => {
-		// console.log('submit')
 		e.preventDefault()
 		if (text.trim()) {
-			// console.log(text.trim())
-			// console.log(e)
 			sendMessage(text.trim())
 			setText('')
 		}

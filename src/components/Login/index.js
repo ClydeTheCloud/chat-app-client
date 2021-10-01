@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import './index.style.scss'
 
+// Страница ввода имени пользователя
 export default function Login({ setName }) {
 	const [value, setValue] = useState('')
 	const [error, setError] = useState('')
 
+	// Обработка входа
 	const handleSumbit = e => {
 		e.preventDefault()
 		const isValid = validateName(value)
@@ -15,6 +17,7 @@ export default function Login({ setName }) {
 		}
 	}
 
+	// Проверка валидности имени
 	const validateName = name => {
 		if (name.trim().length > 15) {
 			return { status: false, error: 'Слишком длинное имя' }
@@ -25,6 +28,7 @@ export default function Login({ setName }) {
 		}
 	}
 
+	// Обработчик изменения формы
 	const changeHandler = e => {
 		setValue(e.target.value)
 		setError('')

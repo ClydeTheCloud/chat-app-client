@@ -13,16 +13,18 @@
 
 	input {
 		height: 50px;
-		width: calc(100% - 80px);
+		width: calc(100% - 65px);
 	}
 
 	button {
 		display: flex;
-		place-items: center;
+		align-items: center;
+		justify-content: center;
 		text-align: center;
-		width: 75px;
+		width: 60px;
 		height: 50px;
 		margin-left: 5px;
+		padding: 0;
 
 		background-color: #fff;
 		border: none;

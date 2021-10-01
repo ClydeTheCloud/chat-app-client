@@ -6,6 +6,7 @@ import useCall from './hooks/useCall'
 import useChat from './hooks/useChat'
 
 function App() {
+	// Адрес для подключения серверу socket.io
 	const url = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 'https://my-video-chat-app-server.herokuapp.com/'
 	const { isChatReady, messages, sendMessage, logout, setUsername, usersOnline, socket } = useChat(url)
 	const { handleCall, emitingStream, receivingStream, incomingStream } = useCall(socket)
