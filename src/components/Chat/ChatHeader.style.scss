@@ -1,0 +1,57 @@
+.chat-header {
+	width: 100%;
+	height: 100px;
+	padding: 1em clamp(0.5em, 3vw, 2em);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: var(--base-color);
+
+	.room {
+		font-size: clamp(16px, 2vw, 22px);
+		font-weight: bold;
+		display: flex;
+		align-items: center;
+
+		.dot {
+			display: inline-block;
+			margin-right: 5px;
+			width: clamp(10px, 1.5vw, 15px);
+			height: clamp(10px, 1.5vw, 15px);
+			border-radius: 10px;
+			background-color: gray;
+		}
+
+		.call-button {
+			display: flex;
+			width: 50px;
+			height: 50px;
+			padding: 0;
+			align-items: center;
+			justify-content: center;
+			margin-left: 5px;
+
+			&:hover {
+				background-color: var(--green);
+			}
+
+			&.calling {
+				background-color: var(--red);
+			}
+
+			svg {
+				width: 40px;
+				height: auto;
+				padding: 0;
+			}
+		}
+	}
+
+	.logout,
+	.online {
+		&:hover {
+			background-color: var(--accent-color2);
+			color: var(--accent-color3);
+		}
+	}
+}

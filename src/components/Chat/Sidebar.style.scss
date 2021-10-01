@@ -1,0 +1,26 @@
+.sidebar {
+	z-index: 5;
+	font-size: clamp(14px, 2vw, 20px);
+	position: absolute;
+	width: 300px;
+	left: -300px;
+	height: 100%;
+	background-color: var(--accent-color2);
+	color: var(--accent-color3);
+	padding: 2em;
+	text-align: center;
+	transition: all 0.2s ease-in-out;
+
+	&.open {
+		left: 0;
+	}
+
+	ul {
+		list-style: none;
+		word-wrap: break-word;
+	}
+
+	button {
+		margin-bottom: 1em;
+	}
+}

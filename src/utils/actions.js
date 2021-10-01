@@ -1,0 +1,15 @@
+export const ACTIONS = {
+	CONNECT: 'connect',
+	CONNECTION_ESTABLISHED: 'connection-established',
+	NOTICE: 'notice',
+	MESSAGE: 'message',
+	ADD_MESSAGE: 'add-message',
+	INIT_MESSAGES: 'init-messages',
+	GET_MESSAGES: 'get-messages',
+	USERS: 'users',
+	DISCONNECT: 'disconnect',
+	CALL_STARTED: 'call-started',
+	CALL_ANSWERED: 'call-answered',
+	ANSWER_CALL: 'answer-call',
+	CALL_ENDED: 'call-ended',
+}

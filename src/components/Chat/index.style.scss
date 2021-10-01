@@ -1,0 +1,30 @@
+.chat {
+	background-color: var(--accent-color3);
+	position: relative;
+	height: calc(100% - 4em);
+	// width: clamp(300px, 1000px, 1200px);
+	width: 90%;
+	min-width: 300px;
+	max-width: 1200px;
+	margin: 2em;
+	border-radius: 25px;
+	overflow-x: hidden;
+
+	.messages {
+		overflow-x: auto;
+		padding: 0.5em clamp(0.5em, 3vw, 2em);
+		height: calc(100% - 200px);
+
+		&::-webkit-scrollbar {
+			width: 1em;
+		}
+
+		&::-webkit-scrollbar-track {
+			background-color: var(--accent-color1);
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background-color: var(--accent-color2);
+		}
+	}
+}
